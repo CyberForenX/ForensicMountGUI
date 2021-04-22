@@ -1,0 +1,3 @@
+[console_scripts]
+imount = imagemounter.cli.imount:main
+
