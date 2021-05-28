@@ -7,6 +7,7 @@ import getpass
 import pytsk3
 import hashlib
 import datetime
+import DatabaseCreator
 
 con = sqlite3.connect("mountdb.db")
 cur = con.cursor()
@@ -247,6 +248,7 @@ class PasswordPrompt(QWidget):
 
 
 def main():
+    DatabaseCreator
     App = QApplication(sys.argv)
     window = Window()
     passPrompt = PasswordPrompt()
