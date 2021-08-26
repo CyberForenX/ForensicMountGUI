@@ -27,6 +27,8 @@ class Window(QWidget):
         self.show()
 
     def UI(self):
+        global counter
+        counter = 0
         mainLayout = QVBoxLayout()
         topLayout = QHBoxLayout()
         bottomLayout = QHBoxLayout()
@@ -142,6 +144,15 @@ class Window(QWidget):
                 self.mountTable.setItem(counter,5, QTableWidgetItem(str(hash_ouptut)))
                 self.mountTable.resizeColumnsToContents()
 
+                try:
+                    query = "INSERT INTO mount_images (Mounted_Forensic_Image,Forensic_Image_Path,Forensic_Image_Type,Number_of_Partitions,Mount_Time,Current_MD5_Hash) VALUES(?,?,?,?,?,?)"
+                    cur.execute(query,(file,mountPath,"ewf",numPartitions,curTime,hash_ouptut))
+                    con.commit()
+                    QMessageBox.information(self,"Success",f"Forensic Image {file} Mounted")
+
+                except:
+                    QMessageBox.information(self, "Warning", "Forensic image has not been added")
+
 
                 counter += 1
                 self.mountTable.insertRow(counter)
@@ -194,6 +205,15 @@ class Window(QWidget):
                 counter += 1
                 self.mountTable.insertRow(counter)
 
+                try:
+                    query = "INSERT INTO mount_images (Mounted_Forensic_Image,Forensic_Image_Path,Forensic_Image_Type,Number_of_Partitions,Mount_Time,Current_MD5_Hash) VALUES(?,?,?,?,?,?)"
+                    cur.execute(query,(file,mountPath,"raw",numPartitions,curTime,hash_ouptut))
+                    con.commit()
+                    QMessageBox.information(self,"Success",f"Forensic Image {file} Mounted")
+
+                except:
+                    QMessageBox.information(self, "Warning", "Forensic image has not been added")
+
 
 
     def unmount(self):
@@ -205,14 +225,21 @@ class Window(QWidget):
                 rowNumber = item.row()
 
             unMount = self.mountTable.item(rowNumber,1).text()
+            imageName = self.mountTable.item(rowNumber, 0).text()
             self.mountTable.removeRow(rowNumber)
 
             unMountCommand = f"umount {unMount}"
             removeMountPoint = f"rmdir {unMount}"
 
+
             os.system(f'echo {sudoPassword}|sudo -S {unMountCommand}')
             os.system(f'echo {sudoPassword}|sudo -S {removeMountPoint}')
             counter = counter - 1
+
+
+            sqlDel = f"DELETE FROM mount_images WHERE Mounted_Forensic_Image LIKE \"{str(imageName)}\""
+            cur.execute(sqlDel)
+            con.commit()
 
 
 
@@ -245,6 +272,30 @@ class PasswordPrompt(QWidget):
 
         self.close()
 
+def checkDatabase(window):
+    global counter
+    query = "SELECT * FROM mount_images"
+    mounted_path = cur.execute(query).fetchall()
+    for path in mounted_path:
+        status = subprocess.call(f"test -e {path[2]}", shell=True)
+
+
+        if (status == 0):
+            print(f"{path[2]} is mounted")
+            window.mountTable.setItem(counter, 0, QTableWidgetItem(str(path[1])))
+            window.mountTable.setItem(counter, 1, QTableWidgetItem(str(path[2])))
+            window.mountTable.setItem(counter, 2, QTableWidgetItem("raw"))
+            window.mountTable.setItem(counter, 3, QTableWidgetItem(str(path[4])))
+            window.mountTable.setItem(counter, 4, QTableWidgetItem(str(path[5])))
+            window.mountTable.setItem(counter, 5, QTableWidgetItem(str(path[6])))
+            window.mountTable.resizeColumnsToContents()
+            counter += 1
+            window.mountTable.insertRow(counter)
+
+        else:
+            sqlDel = f"DELETE FROM mount_images WHERE Mounted_Forensic_Image LIKE \"{path[1]}\""
+            cur.execute(sqlDel)
+            con.commit()
 
 
 def main():
@@ -252,7 +303,9 @@ def main():
     App = QApplication(sys.argv)
     window = Window()
     passPrompt = PasswordPrompt()
+    checkDatabase(window)
     sys.exit(App.exec_())
+
 
 if __name__ == '__main__':
     main()
