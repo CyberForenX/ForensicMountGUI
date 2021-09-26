@@ -2,6 +2,7 @@
 
 This product does have some limitations at the momment with the type of forensic images it can handle, for example:
 - Any images that are of USB mass storage or mobile devices may have complications. I am not sure why but any feedback that can help would be appreciated.
+- The size of the image doesnt seem to be too much of a problem, the only thing that happens is it may take a little bit to show as mounted. Reasoning behind this most likely comes from the hashing process.
 - If the image is split into multiple segments this will not play well with that. Since this is becoming more common though due to the constent increase in forensic image size, any pointers towards how to do this would again be appreciated.
 - This is a complete first build, but as shown there are extra features I would like to add and bugs that are present
 
