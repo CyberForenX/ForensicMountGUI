@@ -11,6 +11,7 @@ The first thing that needs to be done is the installation of xmount(https://www.
 With xmount installed Python 3.8 needs to be installed on the Linux machine being leveraged, to do this the following commands can be ran:
 
 **sudo apt-get update**
+
 **sudo apt-get install python3.8**
 
 Now that Python 3.8 is installed, then the respective libraries for the tool need to be installed. To do this the following command can be ran with the requirements.txt file:
